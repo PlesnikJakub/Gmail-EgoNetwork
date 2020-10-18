@@ -23,6 +23,22 @@ from google.auth.transport.requests import Request
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
+def show_chatty_threads(service, user_id='me'):
+    threads = service.users().threads().list(userId=user_id).execute().get('threads', [])
+    for thread in threads:
+        tdata = service.users().threads().get(userId=user_id, id=thread['id']).execute()
+        nmsgs = len(tdata['messages'])
+
+        if nmsgs > 2:    # skip if <3 msgs in thread
+            msg = tdata['messages'][0]['payload']
+            subject = ''
+            for header in msg['headers']:
+                if header['name'] == 'Subject':
+                    subject = header['value']
+                    break
+            if subject:  # skip if no Subject line
+                print('- %s (%d msgs)' % (subject, nmsgs))
+
 def main():
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
@@ -48,17 +64,9 @@ def main():
 
     service = build('gmail', 'v1', credentials=creds)
 
-    # Call the Gmail API
-    results = service.users().labels().list(userId='me').execute()
-    labels = results.get('labels', [])
-
-    if not labels:
-        print('No labels found.')
-    else:
-        print('Labels:')
-        for label in labels:
-            print(label['name'])
+    show_chatty_threads(service)
 
 if __name__ == '__main__':
     main()
+
 # [END gmail_quickstart]
