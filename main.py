@@ -24,20 +24,13 @@ from google.auth.transport.requests import Request
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def show_chatty_threads(service, user_id='me'):
-    threads = service.users().threads().list(userId=user_id).execute().get('threads', [])
-    for thread in threads:
-        tdata = service.users().threads().get(userId=user_id, id=thread['id']).execute()
-        nmsgs = len(tdata['messages'])
+    messages = service.users().messages().list(userId=user_id).execute().get('messages', [])
+    for message in messages:
 
-        if nmsgs > 2:    # skip if <3 msgs in thread
-            msg = tdata['messages'][0]['payload']
-            subject = ''
-            for header in msg['headers']:
-                if header['name'] == 'Subject':
-                    subject = header['value']
-                    break
-            if subject:  # skip if no Subject line
-                print('- %s (%d msgs)' % (subject, nmsgs))
+        data = service.users().messages().get(userId=user_id, id=message["id"]).execute()
+        payload = data.get('payload', []).get('headers', [])
+        for part in payload:
+            print(part["name"])
 
 def main():
     """Shows basic usage of the Gmail API.
