@@ -30,7 +30,8 @@ def show_chatty_threads(service, user_id='me'):
         data = service.users().messages().get(userId=user_id, id=message["id"]).execute()
         payload = data.get('payload', []).get('headers', [])
         for part in payload:
-            print(part["name"])
+            if part["name"] == "From":
+                print(part["value"])
 
 def main():
     """Shows basic usage of the Gmail API.
