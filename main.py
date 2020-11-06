@@ -19,19 +19,70 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from apiclient import errors
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+EMAIL_MAX_COUNT = 250
+
+def processMessagePayload(payload) -> str:
+    collumnNamesForExport = ["Date","From", "To", "CC"]
+    valuesToExport = dict()
+    newline = ""
+
+    for part in payload:
+        if part["name"] in collumnNamesForExport:
+            valuesToExport[part["name"]] = part["value"]
+    
+    for column in collumnNamesForExport:
+        newline += valuesToExport.get(column, "") + ";"
+
+    return newline + "\n"
+
+def saveToFile(lines):
+    file1 = open("output.csv","a")
+    file1.writelines(lines)
+
+
+def listMessagesWithLabels(service, user_id, label_ids=[]):
+    try:
+        response = service.users().messages().list(userId=user_id,
+                                                    maxResults=500).execute()
+        messages = []
+        if 'messages' in response:
+            messages.extend(response['messages'])
+
+        while 'nextPageToken' in response and len(messages) < EMAIL_MAX_COUNT:
+            page_token = response['nextPageToken']
+
+            response = service.users().messages().list(userId=user_id,
+                                                        pageToken=page_token,
+                                                        maxResults=500).execute()
+
+            messages.extend(response['messages'])
+
+        return messages
+    
+    except errors.HttpError as error:
+        print('An error occurred: %s' % error)
+    
 
 def show_chatty_threads(service, user_id='me'):
-    messages = service.users().messages().list(userId=user_id).execute().get('messages', [])
-    for message in messages:
+    linesToExort = []
+    messages = listMessagesWithLabels(service, user_id)
 
+    listMessagesWithLabels
+    for message in messages:
         data = service.users().messages().get(userId=user_id, id=message["id"]).execute()
         payload = data.get('payload', []).get('headers', [])
-        for part in payload:
-            if part["name"] == "From":
-                print(part["value"])
+        line = processMessagePayload(payload)
+        linesToExort.append(line)
+
+        if len(linesToExort) >= EMAIL_MAX_COUNT:
+            break
+
+    saveToFile(linesToExort)    
+
 
 def main():
     """Shows basic usage of the Gmail API.
