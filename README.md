@@ -1,14 +1,21 @@
 # GmailEgoNetwork
 
 
+All prerequisities and original manual for API settup is available at https://developers.google.com/gmail/api/quickstart/python
 
+:warning: The setup is complex, so take your time.
 
 ## How to run
+
 * Clone or download repository
-* Go to https://developers.google.com/gmail/api/quickstart/python
-    * In Step 1 Click this button to create a new Cloud Platform project and automatically enable the Gmail API
-    * In resulting dialog click _DOWNLOAD CLIENT CONFIGURATION_ and save the file credentials.json to your working directory.
+* Go to Google console and create a project - follow https://developers.google.com/workspace/guides/create-project#create_a_new_google_cloud_platform_gcp_project
+* Enable Gmail API for your project - simmilar to https://developers.google.com/workspace/guides/create-project#enable-api
+* Setup OAuth consent screen - https://developers.google.com/workspace/guides/create-credentials#configure_the_oauth_consent_screen
+* Add your email into Test users list on consent screen page
+* Generate OAuth 2.0 Client IDs credentials for desktop application - https://developers.google.com/workspace/guides/create-credentials
+* Download credentials and put credentials.json into project root
 *  Install dependencies
+
 ```
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
@@ -16,3 +23,5 @@ pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-
 ```
 python main.py
 ```
+* On first run you will be asked for permissions
+* Check out output.csv for result
